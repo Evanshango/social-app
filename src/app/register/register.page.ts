@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/auth';
-import { auth } from 'firebase/app';
+import { AlertController } from '@ionic/angular';
+import {Router} from '@angular/router'
 
 @Component({
   selector: 'app-register',
@@ -14,7 +15,9 @@ export class RegisterPage implements OnInit {
   cpassword: string = ""
 
   constructor(
-    public afAuth: AngularFireAuth
+    public afAuth: AngularFireAuth,
+    public alert: AlertController,
+    public router: Router
     ) { }
 
   ngOnInit() {
@@ -23,17 +26,24 @@ export class RegisterPage implements OnInit {
   async register(){
     const {username, password, cpassword} = this
     if(password !== cpassword){
-      return console.error("Passwords don't match")
+      this.showAlert("Error!", "Password mismatch")
     }
     try{
       const res = await this.afAuth.auth.createUserWithEmailAndPassword(username + '@test.com', password)
-      console.log(res)
+      this.showAlert("Success", "Welcome aboard")
+      this.router.navigate(['/tabs'])
     } catch(error){
-      console.dir(error)
-      if(error.code === "auth/weak-password"){
-        console.log("Password should be at least 6 characters long")
-      }
+      this.showAlert("Error!", error.message)
     }
+  }
+
+  async showAlert(header: string, message: string){
+    const alert = await this.alert.create({
+      header,
+      message,
+      buttons: ["Ok"]
+    })
+    await alert.present()
   }
 
 }
